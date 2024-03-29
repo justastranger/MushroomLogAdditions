@@ -1,0 +1,13 @@
+{
+    "Format": "2.0.0",
+    "Changes": [
+        {
+            "Action": "EditData",
+            "Target": "Data/Machines",
+            "TargetField": [ "(BC)MushroomLog", "OutputRules", "#0", "OutputItem", "#0" ],
+            "Entries": {
+                "OutputMethod": "MushroomLogAdditions.ModEntry, MushroomLogAdditions: OutputMushroomLog"
+            }
+        }
+    ]
+}

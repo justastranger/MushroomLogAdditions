@@ -1,0 +1,13 @@
+﻿{
+    "Name": "[CP] Mushroom Log Additions",
+    "Author": "justastranger",
+    "Version": "0.1.0",
+    "Description": "Content Patcher component to redirect Mushroom Log's output logic.",
+    "UniqueID": "JAS.CPMushroomLogAdditions",
+    "MinimumApiVersion": "4.0.0",
+    "UpdateKeys": [ "GitHub:justastranger/MushroomLogAdditions" ],
+    "ContentPackFor": {
+        "UniqueID": "Pathoschild.ContentPatcher",
+        "Required": true
+    }
+}
