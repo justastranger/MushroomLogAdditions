@@ -85,10 +85,10 @@ namespace MushroomLogAdditions
                 if (tree.growthStage.Value >= 5)
                 {
                     // check to see if the scanned tree is registered as having an output
-                    if (ModEntry.treeToOutputDict.TryGetValue(tree.treeType.Value, out string mushroomType))
+                    if (ModEntry.treeToOutputDict.TryGetValue(tree.treeType.Value, out string? mushroomType))
                     {
                         // add them to the existing pool of mushrooms
-                        ___mushroomPossibilities.Add(mushroomType);
+                        if (mushroomType != null) ___mushroomPossibilities.Add(mushroomType);
                     }
                 }
             }
