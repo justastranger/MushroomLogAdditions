@@ -32,6 +32,8 @@ namespace MushroomLogAdditions
 
         private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
         {
+            // This framework comes with one addition
+            // It was the entire point of writing this and doubles as an example of the format
             IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
                 directoryPath: Path.Combine(Helper.DirectoryPath, "content-pack"),
                 id: Guid.NewGuid().ToString("N"),
@@ -40,11 +42,14 @@ namespace MushroomLogAdditions
                 author: "justastranger",
                 version: new SemanticVersion(1, 0, 0)
             );
+            // initialize the local variable and load the internal datapack in one line
             Dictionary<string, string>? data = internalContentPack.ReadJsonFile<Dictionary<string, string>>("MushroomLogData.json");
             if (data != null && data.Count > 0)
             {
+                // this should never fail the check
                 data.ToList().ForEach(x => { treeToOutputDict[x.Key] = x.Value; });
             }
+            else Monitor.Log("Internal content pack failed to load.", LogLevel.Error); // *cough*
 
             foreach (IContentPack contentPack in Helper.ContentPacks.GetOwned())
             {
