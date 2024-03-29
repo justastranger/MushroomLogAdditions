@@ -54,25 +54,32 @@ namespace MushroomLogAdditions
 
         private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
         {
-            // This framework comes with one addition
-            // It was the entire point of writing this and doubles as an example of the format
-            IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
-                directoryPath: Path.Combine(Helper.DirectoryPath, "internal"),
-                id: "JAS.MushroomLogAdditions.Internal",
-                name: "Mushroom Log Additions Internal Pack",
-                description: "Adds mushroom trees->mushroom seeds to the Mushroom Log results.",
-                author: instance.ModManifest.Author,
-                version: instance.ModManifest.Version
-            );
-            // initialize the local variable and load the internal datapack in one line
-            Dictionary<string, string>? data = internalContentPack.ReadJsonFile<Dictionary<string, string>>("MushroomLogData.json");
-            if (data != null && data.Count > 0)
+            Dictionary<string, string>? data;
+            // true by default
+            if (instance.config.loadInternal)
             {
-                // this should never fail the check
-                data.ToList().ForEach(x => { treeToOutputDict[x.Key] = x.Value; });
-                Monitor.Log("Loaded internal content pack.");
+                // This framework comes with one addition
+                // It was the entire point of writing this and doubles as an example of the format
+
+                // Tell SMAPI that the `.\internal` folder is a content pack
+                IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
+                    directoryPath: Path.Combine(Helper.DirectoryPath, "internal"),
+                    id: "JAS.MushroomLogAdditions.Internal",
+                    name: "Mushroom Log Additions Internal Pack",
+                    description: "Adds mushroom trees->mushroom seeds to the Mushroom Log results.",
+                    author: instance.ModManifest.Author,
+                    version: instance.ModManifest.Version
+                );
+                // actually load the datapack
+                data = internalContentPack.ReadJsonFile<Dictionary<string, string>>("MushroomLogData.json");
+                if (data != null && data.Count > 0)
+                {
+                    // this should never fail the check
+                    data.ToList().ForEach(x => { treeToOutputDict[x.Key] = x.Value; });
+                    Monitor.Log("Loaded internal content pack.");
+                }
+                else Monitor.Log("Internal content pack failed to load.", LogLevel.Error); // *cough*
             }
-            else Monitor.Log("Internal content pack failed to load.", LogLevel.Error); // *cough*
 
             foreach (IContentPack contentPack in Helper.ContentPacks.GetOwned())
             {
