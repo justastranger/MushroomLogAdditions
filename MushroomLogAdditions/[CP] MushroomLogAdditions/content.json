@@ -4,7 +4,7 @@
         {
             "Action": "EditData",
             "Target": "Data/Machines",
-            "TargetField": [ "(BC)MushroomLog", "OutputRules", "#0", "OutputItem", "#0" ],
+            "TargetField": [ "(BC)MushroomLog", "OutputRules", "Default", "OutputItem", "???" ],
             "Entries": {
                 "OutputMethod": "MushroomLogAdditions.ModEntry, MushroomLogAdditions: OutputMushroomLog"
             }
