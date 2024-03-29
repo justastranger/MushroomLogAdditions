@@ -72,6 +72,9 @@ namespace MushroomLogAdditions
                     }
                 }
             }
+
+            instance.Monitor.Log("Content packs loaded, current additions: ");
+            instance.Monitor.Log(Newtonsoft.Json.JsonConvert.SerializeObject(treeToOutputDict));
         }
 
         public static Item OutputMushroomLog(StardewValley.Object machine, Item inputItem, bool probe, MachineItemOutput outputData, out int? overrideMinutesUntilReady)
@@ -80,6 +83,7 @@ namespace MushroomLogAdditions
             instance.Monitor.Log("Mushroom Log Postfix");
 
             // we have to clone the vanilla code since we can't access any of the original method's local variables
+            // otherwise this would've been a simple postfix...
             List<Tree> nearbyTrees = new();
             for (int x = (int)machine.TileLocation.X - 3; x < (int)machine.TileLocation.X + 4; x++)
             {
@@ -101,6 +105,7 @@ namespace MushroomLogAdditions
                 {
                     string mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
                     string treeType = tree.treeType.Value;
+                    instance.Monitor.Log($"Testing treeType {treeType}.");
                     if (!(treeType == "2"))
                     {
                         if (!(treeType == "1"))
@@ -131,6 +136,7 @@ namespace MushroomLogAdditions
                         if (treeToOutputDict.ContainsKey(treeType))
                         {
                             mushroomType = treeToOutputDict[treeType];
+                            instance.Monitor.Log($"TreeType {treeType} recognized, injecting {mushroomType} into mushroomPossibilities.");
                         }
                     }
                     mushroomPossibilities.Add(mushroomType);
@@ -157,8 +163,8 @@ namespace MushroomLogAdditions
                     break;
                 }
             }
-
-            instance.Monitor.Log(Newtonsoft.Json.JsonConvert.SerializeObject(mushroomPossibilities));
+            // confirmed we have an appropriate vanilla mushroomPossibilities, though our added entries are missing
+            // instance.Monitor.Log(Newtonsoft.Json.JsonConvert.SerializeObject(mushroomPossibilities));
             // re-roll the output using the new pool with the old stack amount and quality values
             return ItemRegistry.Create(Game1.random.ChooseFrom(mushroomPossibilities), amount, quality, false);
         }
