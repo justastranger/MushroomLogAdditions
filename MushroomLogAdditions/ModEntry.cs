@@ -48,6 +48,7 @@ namespace MushroomLogAdditions
             {
                 // this should never fail the check
                 data.ToList().ForEach(x => { treeToOutputDict[x.Key] = x.Value; });
+                Monitor.Log("Loaded internal data pack.");
             }
             else Monitor.Log("Internal content pack failed to load.", LogLevel.Error); // *cough*
 
