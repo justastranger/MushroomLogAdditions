@@ -25,14 +25,31 @@ namespace MushroomLogAdditions
         {
             string startingMessage = i18n.Get("MushroomLogAdditions.start");
             Monitor.Log(startingMessage, LogLevel.Trace);
-
+            instance = this;
             config = helper.ReadConfig<Config>();
             helper.Events.GameLoop.SaveLoaded += CollectOutputs;
-            instance = this;
-            harmony = new Harmony(ModManifest.UniqueID);
-            // harmony.PatchAll();
-            // harmony.Patch(AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.OutputMushroomLog)), new(typeof(ObjectPatch), nameof(ObjectPatch.OutputMushroomLogPrefix)), null, null, null);
-            
+            Helper.Events.Content.AssetRequested += AssetRequested;
+        }
+
+        // Thanks Wren
+
+        private void AssetRequested(object? sender, AssetRequestedEventArgs ev)
+        {
+            if (ev.NameWithoutLocale.IsEquivalentTo("Data/Machines"))
+              ev.Edit(EditMachines, AssetEditPriority.Default);
+        }
+
+        private void EditMachines(IAssetData asset)
+        {
+            if (asset.Data is Dictionary<string, MachineData> data && data.TryGetValue("(BC)MushroomLog", out var machine))
+            {
+                var output = machine.OutputRules.Where(r => r.Id == "Default").FirstOrDefault();
+                if (output is null) // not found
+                    return;
+                var item = output.OutputItem.Where(i => i.Id == "???").FirstOrDefault();
+                if (item is not null)
+                    item.OutputMethod = "MushroomLogAdditions.ModEntry, MushroomLogAdditions: OutputMushroomLog";
+            }
         }
 
         private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
