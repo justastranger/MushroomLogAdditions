@@ -15,7 +15,6 @@ namespace MushroomLogAdditions
 
         internal static Dictionary<string, string> treeToOutputDict = new();
 
-        internal static ModEntry instance;
 
         internal static Harmony harmony;
 
@@ -25,12 +24,13 @@ namespace MushroomLogAdditions
             Monitor.Log(startingMessage, LogLevel.Trace);
 
             config = helper.ReadConfig<Config>();
-            instance = this;
+            helper.Events.GameLoop.SaveLoaded += CollectOutputs;
+
             harmony = new Harmony(ModManifest.UniqueID);
             harmony.PatchAll();
         }
 
-        public void CollectOutputs()
+        private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
         {
             IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
                 directoryPath: Path.Combine(Helper.DirectoryPath, "content-pack"),
