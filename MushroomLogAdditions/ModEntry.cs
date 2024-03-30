@@ -113,9 +113,10 @@ namespace MushroomLogAdditions
             // we have to clone the vanilla code since we can't access any of the original method's local variables
             // otherwise this would've been a simple postfix...
             List<Tree> nearbyTrees = new();
-            for (int x = (int)machine.TileLocation.X - 3; x < (int)machine.TileLocation.X + 4; x++)
+            int scanRadius = instance.config.scanRadius;
+            for (int x = (int)machine.TileLocation.X - scanRadius; x < (int)machine.TileLocation.X + scanRadius + 1; x++)
             {
-                for (int y = (int)machine.TileLocation.Y - 3; y < (int)machine.TileLocation.Y + 4; y++)
+                for (int y = (int)machine.TileLocation.Y - scanRadius; y < (int)machine.TileLocation.Y + scanRadius + 1; y++)
                 {
                     Vector2 v = new((float)x, (float)y);
                     if (machine.Location.terrainFeatures.ContainsKey(v) && machine.Location.terrainFeatures[v] is Tree tree)
