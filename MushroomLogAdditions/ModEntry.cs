@@ -8,6 +8,7 @@ using StardewValley.GameData.Machines;
 using Newtonsoft;
 using System.Reflection.PortableExecutable;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace MushroomLogAdditions
 {
@@ -90,8 +91,12 @@ namespace MushroomLogAdditions
                     if (data != null && data.Count > 0)
                     {
                         // merge the two dictionaries, overwriting values
-                        // TODO log duplicates
                         Monitor.Log($"Content pack loaded: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
+                        var overlap = data.Keys.Intersect(treeToOutputDict.Keys).ToList();
+                        if (overlap.Count > 0)
+                        {
+                            Monitor.Log($"Detected duplicate TreeTypes when loading {contentPack.Manifest.Name} : {JsonConvert.SerializeObject(overlap)}. Overwriting old outputs with new values.", LogLevel.Info);
+                        }
                         data.ToList().ForEach(x => {treeToOutputDict[x.Key] = x.Value;});
                     }
                 }
