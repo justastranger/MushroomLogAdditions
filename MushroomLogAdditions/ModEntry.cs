@@ -118,11 +118,13 @@ namespace MushroomLogAdditions
             {
                 for (int y = (int)machine.TileLocation.Y - scanRadius; y < (int)machine.TileLocation.Y + scanRadius + 1; y++)
                 {
-                    Vector2 v = new((float)x, (float)y);
+                    Vector2 v = new(x, y);
                     if (machine.Location.terrainFeatures.ContainsKey(v) && machine.Location.terrainFeatures[v] is Tree tree)
                     {
                         nearbyTrees.Add(tree);
                     }
+                    // TODO else if (machine.Location.terrainFeatures.ContainsKey(v) && machine.Location.terrainFeatures[v] is FruitTree fruitTree)
+                    // nearbyTrees would have to be swapped to a List<TerrainFeature>
                 }
             }
             int treeCount = nearbyTrees.Count;
@@ -132,30 +134,20 @@ namespace MushroomLogAdditions
             {
                 if (tree.growthStage.Value >= 5)
                 {
-                    string mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
                     string treeType = tree.treeType.Value;
-                    if (treeType == "2")
-                    {
-                        mushroomType = (Game1.random.NextBool(0.1) ? "(O)422" : "(O)420");
-                    }
-                    else if (treeType == "1")
-                    {
-                        mushroomType = "(O)257";
-                    }
-                    else if (treeType == "3")
-                    {
-                        mushroomType = "(O)281";
-                    }
-                    else if (treeType == "13")
-                    {
-                        mushroomType = "(O)422";
-                    }
                     // this small bit here is the only addition to the original function
                     // check to see if the scanned tree is registered as having an output
-                    else if (treeToOutputDict.ContainsKey(treeType))
+                    // if it's not registered, pass through the vanilla outputs
+                    if (!treeToOutputDict.TryGetValue(treeType, out string? mushroomType))
                     {
-                        mushroomType = treeToOutputDict[treeType];
+                        if (treeType == "2")
+                        {
+                            mushroomType = (Game1.random.NextBool(0.1) ? "(O)422" : "(O)420");
                         }
+                    }
+                    // if it was registered it skips right to here with a mushroomType otherwise one is assigned above
+                    // or a generic output is selected
+                    if (mushroomType == null) mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
                     mushroomPossibilities.Add(mushroomType);
                     if (tree.hasMoss.Value)
                     {
