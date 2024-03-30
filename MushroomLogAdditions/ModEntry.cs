@@ -53,23 +53,27 @@ namespace MushroomLogAdditions
 
         private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
         {
+
+            // This framework comes with one addition
+            // It was the entire point of writing this and doubles as an example of the format
+
+            // Tell SMAPI that the `.\internal` folder is a content pack
+            IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
+                directoryPath: Path.Combine(Helper.DirectoryPath, "internal"),
+                id: "JAS.MushroomLogAdditions.Internal",
+                name: "Mushroom Log Additions Internal Pack",
+                description: "Adds mushroom trees->mushroom seeds to the Mushroom Log results.",
+                author: instance.ModManifest.Author,
+                version: instance.ModManifest.Version
+            );
+            // initialize the default vanilla behavior or die trying
+            treeToOutputDict = internalContentPack.ReadJsonFile<MushroomLogData>("VanillaMushroomLogData.json") ?? throw(new NullReferenceException("Vanilla Mushroom Log Data returned Null value."));
+
             MushroomLogData? data;
             // true by default
             if (instance.config.loadInternal)
             {
-                // This framework comes with one addition
-                // It was the entire point of writing this and doubles as an example of the format
-
-                // Tell SMAPI that the `.\internal` folder is a content pack
-                IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
-                    directoryPath: Path.Combine(Helper.DirectoryPath, "internal"),
-                    id: "JAS.MushroomLogAdditions.Internal",
-                    name: "Mushroom Log Additions Internal Pack",
-                    description: "Adds mushroom trees->mushroom seeds to the Mushroom Log results.",
-                    author: instance.ModManifest.Author,
-                    version: instance.ModManifest.Version
-                );
-                // actually load the datapack
+                // load the internal custom datapack
                 data = internalContentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                 if (data != null && data.Count > 0)
                 {
