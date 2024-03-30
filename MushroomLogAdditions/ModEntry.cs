@@ -5,8 +5,6 @@ using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.TerrainFeatures;
 using StardewValley.GameData.Machines;
-using Newtonsoft;
-using System.Reflection.PortableExecutable;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 
@@ -17,7 +15,7 @@ namespace MushroomLogAdditions
         internal Config config;
         internal ITranslationHelper i18n => Helper.Translation;
 
-        internal static Dictionary<string, string> treeToOutputDict = new();
+        internal static MushroomLogData treeToOutputDict = new();
 
         internal static ModEntry instance;
         internal static Harmony harmony;
@@ -55,7 +53,7 @@ namespace MushroomLogAdditions
 
         private void CollectOutputs(object? sender, SaveLoadedEventArgs e)
         {
-            Dictionary<string, string>? data;
+            MushroomLogData? data;
             // true by default
             if (instance.config.loadInternal)
             {
@@ -72,7 +70,7 @@ namespace MushroomLogAdditions
                     version: instance.ModManifest.Version
                 );
                 // actually load the datapack
-                data = internalContentPack.ReadJsonFile<Dictionary<string, string>>("MushroomLogData.json");
+                data = internalContentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                 if (data != null && data.Count > 0)
                 {
                     // this should never fail the check
@@ -87,10 +85,11 @@ namespace MushroomLogAdditions
                 Monitor.Log($"Reading content pack: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
                 if (contentPack.HasFile("MushroomLogData.json"))
                 {
-                    data = contentPack.ReadJsonFile<Dictionary<string, string>>("MushroomLogData.json");
+                    data = contentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                     if (data != null && data.Count > 0)
                     {
                         // merge the two dictionaries, overwriting values
+                        // TODO merge the List value too
                         Monitor.Log($"Content pack loaded: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
                         var overlap = data.Keys.Intersect(treeToOutputDict.Keys);
                         if (overlap.Any())
@@ -103,7 +102,7 @@ namespace MushroomLogAdditions
             }
 
             instance.Monitor.Log("Content packs loaded, current additions:", LogLevel.Trace);
-            instance.Monitor.Log(Newtonsoft.Json.JsonConvert.SerializeObject(treeToOutputDict), LogLevel.Trace);
+            instance.Monitor.Log(JsonConvert.SerializeObject(treeToOutputDict), LogLevel.Trace);
         }
 
         public static Item OutputMushroomLog(StardewValley.Object machine, Item inputItem, bool probe, MachineItemOutput outputData, out int? overrideMinutesUntilReady)
@@ -135,20 +134,31 @@ namespace MushroomLogAdditions
                 if (tree.growthStage.Value >= 5)
                 {
                     string treeType = tree.treeType.Value;
-                    // this small bit here is the only addition to the original function
+                    // Default result from any tree
+                    string mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
                     // check to see if the scanned tree is registered as having an output
-                    // if it's not registered, pass through the vanilla outputs
-                    if (!treeToOutputDict.TryGetValue(treeType, out string? mushroomType))
+                    if (treeToOutputDict.TryGetValue(treeType, out List<OutputWithChance>? mushroomTypes))
                     {
-                        if (treeType == "2")
+                        // if there's something registered and there's no chicanery with the list
+                        if (mushroomTypes != null && mushroomTypes.Any())
                         {
-                            mushroomType = (Game1.random.NextBool(0.1) ? "(O)422" : "(O)420");
+                            // iterate through list
+                            foreach (OutputWithChance output in mushroomTypes)
+                            {
+                                // Roll to select entry in the list and move on so that tree's output can be added to the pool
+                                // grabs the first item in the list that it can
+                                // mushroomType doesn't get reassigned from the default if none of the outputs are selected
+                                if (Game1.random.NextBool(output.Item2))
+                                {
+                                    mushroomType = output.Item1;
+                                    break;
+                                }
+                            }
                         }
                     }
-                    // if it was registered it skips right to here with a mushroomType otherwise one is assigned above
-                    // or a generic output is selected
-                    if (mushroomType == null) mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
+                    // if none were registered, the originally assigned output is used
                     mushroomPossibilities.Add(mushroomType);
+                    // Vanilla function uses moss below as a factor in the quality level
                     if (tree.hasMoss.Value)
                     {
                         mossyCount++;
@@ -163,6 +173,7 @@ namespace MushroomLogAdditions
             int amount = Math.Max(1, Math.Min(5, Game1.random.Next(1, 3) * (nearbyTrees.Count / 2)));
             int quality = 0;
             float qualityBoostChance = mossyCount * 0.025f + treeCount * 0.025f;
+            // repeatedly roll unitl the first failure or iridium quality is hit
             while (Game1.random.NextDouble() < (double)qualityBoostChance)
             {
                 quality++;
