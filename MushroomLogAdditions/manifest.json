@@ -6,5 +6,8 @@
     "UniqueID": "JAS.MushroomLogAdditions",
     "EntryDll": "MushroomLogAdditions.dll",
     "MinimumApiVersion": "4.0.0",
-    "UpdateKeys": [ "GitHub:justastranger/MushroomLogAdditions" ]
+    "UpdateKeys": [
+        "GitHub:justastranger/MushroomLogAdditions",
+        "ModDrop:1539617"
+    ]
 }
