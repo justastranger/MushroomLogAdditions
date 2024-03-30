@@ -92,8 +92,8 @@ namespace MushroomLogAdditions
                     {
                         // merge the two dictionaries, overwriting values
                         Monitor.Log($"Content pack loaded: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
-                        var overlap = data.Keys.Intersect(treeToOutputDict.Keys).ToList();
-                        if (overlap.Count > 0)
+                        var overlap = data.Keys.Intersect(treeToOutputDict.Keys);
+                        if (overlap.Any())
                         {
                             Monitor.Log($"Detected duplicate TreeTypes when loading {contentPack.Manifest.Name} : {JsonConvert.SerializeObject(overlap)}. Overwriting old outputs with new values.", LogLevel.Info);
                         }
