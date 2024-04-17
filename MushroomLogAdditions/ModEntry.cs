@@ -27,7 +27,7 @@ namespace MushroomLogAdditions
             instance = this;
             config = helper.ReadConfig<Config>();
             helper.Events.GameLoop.SaveLoaded += CollectOutputs;
-            Helper.Events.Content.AssetRequested += AssetRequested;
+            helper.Events.Content.AssetRequested += AssetRequested;
         }
 
         // Thanks Wren
@@ -45,8 +45,9 @@ namespace MushroomLogAdditions
                 var output = machine.OutputRules.Where(r => r.Id == "Default").FirstOrDefault();
                 if (output is null) // not found
                     return;
+                // yes, "???" is the actual ID of the output item rule lol
                 var item = output.OutputItem.Where(i => i.Id == "???").FirstOrDefault();
-                if (item is not null)
+                if (item is not null) // the OutputMethod is a method signature: "Classpath, Namespace: MethodName"
                     item.OutputMethod = "MushroomLogAdditions.ModEntry, MushroomLogAdditions: OutputMushroomLog";
             }
         }
@@ -61,13 +62,13 @@ namespace MushroomLogAdditions
             IContentPack internalContentPack = Helper.ContentPacks.CreateTemporary(
                 directoryPath: Path.Combine(Helper.DirectoryPath, "internal"),
                 id: "JAS.MushroomLogAdditions.Internal",
-                name: "Mushroom Log Additions Internal Pack",
-                description: "Adds mushroom trees->mushroom seeds to the Mushroom Log results.",
+                name: i18n.Get("MushroomLogAdditions.internal.name"),
+                description: i18n.Get("MushroomLogAdditions.internal.description"),
                 author: instance.ModManifest.Author,
                 version: instance.ModManifest.Version
             );
             // initialize the default vanilla behavior or die trying
-            treeToOutputDict = internalContentPack.ReadJsonFile<MushroomLogData>("VanillaMushroomLogData.json") ?? throw(new NullReferenceException("Vanilla Mushroom Log Data returned Null value."));
+            treeToOutputDict = internalContentPack.ReadJsonFile<MushroomLogData>("VanillaMushroomLogData.json") ?? throw(new NullReferenceException(i18n.Get("MushroomLogAdditions.vanilla.null")));
 
             MushroomLogData? data;
             // true by default
@@ -79,14 +80,14 @@ namespace MushroomLogAdditions
                 {
                     // this should never fail the check
                     data.ToList().ForEach(x => { treeToOutputDict[x.Key] = x.Value; });
-                    Monitor.Log("Loaded internal content pack.");
+                    Monitor.Log(i18n.Get("MushroomLogAdditions.internal.loaded"), config.loggingLevel);
                 }
-                else Monitor.Log("Internal content pack failed to load.", LogLevel.Error); // *cough*
+                else Monitor.Log(i18n.Get("MushroomLogAdditions.internal.null"), LogLevel.Error); // *cough*
             }
 
             foreach (IContentPack contentPack in Helper.ContentPacks.GetOwned())
             {
-                Monitor.Log($"Reading content pack: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
+                Monitor.Log(i18n.Get("MushroomLogAdditions.packs.loading", new { contentPack.Manifest.Name, contentPack.Manifest.Version, contentPack.DirectoryPath }), LogLevel.Trace);
                 if (contentPack.HasFile("MushroomLogData.json"))
                 {
                     data = contentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
@@ -94,18 +95,18 @@ namespace MushroomLogAdditions
                     {
                         // merge the two dictionaries, overwriting values
                         // TODO merge the List value too
-                        Monitor.Log($"Content pack loaded: {contentPack.Manifest.Name} {contentPack.Manifest.Version} from {contentPack.DirectoryPath}", LogLevel.Trace);
                         var overlap = data.Keys.Intersect(treeToOutputDict.Keys);
                         if (overlap.Any())
                         {
-                            Monitor.Log($"Detected duplicate TreeTypes when loading {contentPack.Manifest.Name} : {JsonConvert.SerializeObject(overlap)}. Overwriting old outputs with new values.", LogLevel.Info);
+                            Monitor.Log(i18n.Get("MushroomLogAdditions.packs.duplicates", new { contentPack.Manifest.Name, overlap = JsonConvert.SerializeObject(overlap) }), LogLevel.Info);
                         }
                         data.ToList().ForEach(x => {treeToOutputDict[x.Key] = x.Value;});
+                        Monitor.Log(i18n.Get("MushroomLogAdditions.packs.loaded"), LogLevel.Trace);
                     }
                 }
             }
 
-            instance.Monitor.Log("Content packs loaded, current additions:", LogLevel.Trace);
+            instance.Monitor.Log(i18n.Get("MushroomLogAdditions.packs.complete"), LogLevel.Trace);
             instance.Monitor.Log(JsonConvert.SerializeObject(treeToOutputDict), LogLevel.Trace);
         }
 
