@@ -116,61 +116,84 @@ namespace MushroomLogAdditions
 
             // we have to clone the vanilla code since we can't access any of the original method's local variables
             // otherwise this would've been a simple postfix...
-            List<Tree> nearbyTrees = new();
+            List<TerrainFeature> nearbyTrees = new();
             int scanRadius = instance.config.scanRadius;
             for (int x = (int)machine.TileLocation.X - scanRadius; x < (int)machine.TileLocation.X + scanRadius + 1; x++)
             {
                 for (int y = (int)machine.TileLocation.Y - scanRadius; y < (int)machine.TileLocation.Y + scanRadius + 1; y++)
                 {
                     Vector2 v = new(x, y);
-                    if (machine.Location.terrainFeatures.ContainsKey(v) && machine.Location.terrainFeatures[v] is Tree tree)
+                    if (machine.Location.terrainFeatures.ContainsKey(v))
                     {
-                        nearbyTrees.Add(tree);
+                        if (machine.Location.terrainFeatures[v] is Tree tree)
+                        {
+                            nearbyTrees.Add(tree);
+                        }
+                        else if (machine.Location.terrainFeatures[v] is FruitTree fruitTree)
+                        {
+                            nearbyTrees.Add(fruitTree);
+                        }
                     }
-                    // TODO else if (machine.Location.terrainFeatures.ContainsKey(v) && machine.Location.terrainFeatures[v] is FruitTree fruitTree)
-                    // nearbyTrees would have to be swapped to a List<TerrainFeature>
                 }
             }
             int treeCount = nearbyTrees.Count;
             List<string> mushroomPossibilities = new();
             int mossyCount = 0;
-            foreach (Tree tree in nearbyTrees)
+            foreach (TerrainFeature feature in nearbyTrees)
             {
-                if (tree.growthStage.Value >= 5)
+                // Default result from any tree
+                string mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
+                string treeType;
+                if (feature is Tree tree)
                 {
-                    string treeType = tree.treeType.Value;
-                    // Default result from any tree
-                    string mushroomType = (Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
-                    // check to see if the scanned tree is registered as having an output
-                    if (treeToOutputDict.TryGetValue(treeType, out List<OutputWithChance>? mushroomTypes))
+                    if (tree.growthStage.Value < Tree.treeStage)
                     {
-                        // if there's something registered and there's no chicanery with the list
-                        if (mushroomTypes != null && mushroomTypes.Any())
-                        {
-                            // iterate through list
-                            foreach (OutputWithChance output in mushroomTypes)
-                            {
-                                // Roll to select entry in the list and move on so that tree's output can be added to the pool
-                                // grabs the first item in the list that it can
-                                // mushroomType doesn't get reassigned from the default if none of the outputs are selected
-                                if (Game1.random.NextBool(output.Item2))
-                                {
-                                    mushroomType = output.Item1;
-                                    break;
-                                }
-                            }
-                        }
+                        continue;
                     }
-                    // if none were registered, the originally assigned output is used
-                    mushroomPossibilities.Add(mushroomType);
+                    treeType = tree.treeType.Value;
                     // Vanilla function uses moss below as a factor in the quality level
                     if (tree.hasMoss.Value)
                     {
                         mossyCount++;
                     }
                 }
+                else if (feature is FruitTree fruitTree)
+                {
+                    if (fruitTree.growthStage.Value < FruitTree.treeStage)
+                    {
+                        continue;
+                    }
+                    treeType = fruitTree.treeId.Value;
+                }
+                else
+                {
+                    continue;
+                }
+                
+                // check to see if the scanned tree is registered as having an output
+                if (treeToOutputDict.TryGetValue(treeType, out List<OutputWithChance>? mushroomTypes))
+                {
+                    // if there's something registered and there's no chicanery with the list
+                    if (mushroomTypes != null && mushroomTypes.Any())
+                    {
+                        // iterate through list
+                        foreach (OutputWithChance output in mushroomTypes)
+                        {
+                            // Roll to select entry in the list and move on so that tree's output can be added to the pool
+                            // grabs the first item in the list that it can
+                            // mushroomType doesn't get reassigned from the default if none of the outputs are selected
+                            if (Game1.random.NextBool(output.Item2))
+                            {
+                                mushroomType = output.Item1;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // if none were registered, the originally assigned output is used
+                mushroomPossibilities.Add(mushroomType);
             }
-
+            // randomly add one of three mushrooms, weighted, to the pool of choices as a default
             for (int i = 0; i < Math.Max(1, (int)(nearbyTrees.Count * 0.75f)); i++)
             {
                 mushroomPossibilities.Add(Game1.random.NextBool(0.05) ? "(O)422" : (Game1.random.NextBool(0.15) ? "(O)420" : "(O)404"));
