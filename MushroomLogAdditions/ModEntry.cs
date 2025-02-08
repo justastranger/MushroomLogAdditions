@@ -7,6 +7,7 @@ using StardewValley.GameData.Machines;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using System.Collections.Specialized;
+using System.Collections;
 
 namespace MushroomLogAdditions
 {
@@ -101,7 +102,7 @@ namespace MushroomLogAdditions
                             Monitor.Log(i18n.Get("MushroomLogAdditions.packs.duplicates", new { contentPack.Manifest.Name, overlap = JsonConvert.SerializeObject(overlap) }), LogLevel.Info);
                             foreach (string treeToMerge in overlap)
                             {
-                                foreach (KeyValuePair<string, float> output in data[treeToMerge])
+                                foreach (DictionaryEntry output in data[treeToMerge])
                                 {
                                     if (treeToOutputDict[treeToMerge].Contains(output.Key)) treeToOutputDict[treeToMerge][output.Key] = output.Value;
                                     else treeToOutputDict[treeToMerge].Add(output.Key, output.Value);
@@ -185,14 +186,14 @@ namespace MushroomLogAdditions
                     if (mushroomTypes != null && mushroomTypes.Count > 0)
                     {
                         // iterate through list
-                        foreach (KeyValuePair<string, float> output in mushroomTypes)
+                        foreach (DictionaryEntry output in mushroomTypes)
                         {
                             // Roll to select entry in the list and move on so that tree's output can be added to the pool
                             // grabs the first item in the list that it can
                             // mushroomType doesn't get reassigned from the default if none of the outputs are selected
-                            if (Game1.random.NextBool(output.Value))
+                            if (output.Value != null && Game1.random.NextBool((float)output.Value))
                             {
-                                mushroomType = output.Key;
+                                mushroomType = (string)output.Key;
                                 break;
                             }
                         }
