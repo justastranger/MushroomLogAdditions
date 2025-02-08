@@ -65,13 +65,13 @@ namespace MushroomLogAdditions
                 author: instance.ModManifest.Author,
                 version: instance.ModManifest.Version
             );
-            // initialize the default vanilla behavior or die trying
+            // initialize using the default vanilla behavior or die trying
             treeToOutputDict = internalContentPack.ReadJsonFile<MushroomLogData>("VanillaMushroomLogData.json") ?? throw(new NullReferenceException(i18n.Get("MushroomLogAdditions.vanilla.null")));
 
-            MushroomLogData? data;
             // true by default
             if (instance.config.loadInternal)
             {
+                MushroomLogData? data;
                 // load the internal custom datapack
                 data = internalContentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                 if (data != null && data.Count > 0)
@@ -85,20 +85,24 @@ namespace MushroomLogAdditions
 
             foreach (IContentPack contentPack in Helper.ContentPacks.GetOwned())
             {
+                MushroomLogData? data;
                 Monitor.Log(i18n.Get("MushroomLogAdditions.packs.loading", new { contentPack.Manifest.Name, contentPack.Manifest.Version, contentPack.DirectoryPath }), LogLevel.Trace);
                 if (contentPack.HasFile("MushroomLogData.json"))
                 {
                     data = contentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                     if (data != null && data.Count > 0)
                     {
-                        // merge the two dictionaries, overwriting values
-                        // TODO merge the List value too
+                        // merge the two dictionaries, discarding conflicts on a first-come-first-saved basis
                         var overlap = data.Keys.Intersect(treeToOutputDict.Keys);
+                        treeToOutputDict.TryAddMany(data);
                         if (overlap.Any())
                         {
                             Monitor.Log(i18n.Get("MushroomLogAdditions.packs.duplicates", new { contentPack.Manifest.Name, overlap = JsonConvert.SerializeObject(overlap) }), LogLevel.Info);
+                            foreach (string treeToMerge in overlap)
+                            {
+                                treeToOutputDict[treeToMerge].TryAddMany(data[treeToMerge]);
+                            }
                         }
-                        data.ToList().ForEach(x => {treeToOutputDict[x.Key] = x.Value;});
                         Monitor.Log(i18n.Get("MushroomLogAdditions.packs.loaded"), LogLevel.Trace);
                     }
                 }
