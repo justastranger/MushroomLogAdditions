@@ -4,11 +4,10 @@ using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.TerrainFeatures;
 using StardewValley.GameData.Machines;
-using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using System.Collections.Specialized;
 using System.Collections;
-using System.Numerics;
+using Microsoft.Xna.Framework;
 
 namespace MushroomLogAdditions
 {
