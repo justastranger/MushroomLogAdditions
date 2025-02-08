@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using System.Collections.Specialized;
 using System.Collections;
+using System.Numerics;
 
 namespace MushroomLogAdditions
 {
@@ -191,7 +192,7 @@ namespace MushroomLogAdditions
                             // Roll to select entry in the list and move on so that tree's output can be added to the pool
                             // grabs the first item in the list that it can
                             // mushroomType doesn't get reassigned from the default if none of the outputs are selected
-                            if (output.Value != null && Game1.random.NextBool((float)output.Value))
+                            if (output.Value != null && Game1.random.NextBool(Convert.ToSingle(output.Value)))
                             {
                                 mushroomType = (string)output.Key;
                                 break;
