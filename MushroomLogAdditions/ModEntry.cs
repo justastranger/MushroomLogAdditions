@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Extensions;
@@ -18,7 +17,6 @@ namespace MushroomLogAdditions
         internal static MushroomLogData treeToOutputDict = new();
 
         internal static ModEntry instance;
-        internal static Harmony harmony;
 
         public override void Entry(IModHelper helper)
         {
@@ -110,7 +108,7 @@ namespace MushroomLogAdditions
             instance.Monitor.Log(JsonConvert.SerializeObject(treeToOutputDict), LogLevel.Trace);
         }
 
-        public static Item OutputMushroomLog(StardewValley.Object machine, Item inputItem, bool probe, MachineItemOutput outputData, out int? overrideMinutesUntilReady)
+        public static Item OutputMushroomLog(StardewValley.Object machine, Item inputItem, bool probe, MachineItemOutput outputData, Farmer player, out int? overrideMinutesUntilReady)
         {
             overrideMinutesUntilReady = null;
 
@@ -171,20 +169,20 @@ namespace MushroomLogAdditions
                 }
                 
                 // check to see if the scanned tree is registered as having an output
-                if (treeToOutputDict.TryGetValue(treeType, out List<OutputWithChance>? mushroomTypes))
+                if (treeToOutputDict.TryGetValue(treeType, out Dictionary<string, float>? mushroomTypes))
                 {
                     // if there's something registered and there's no chicanery with the list
                     if (mushroomTypes != null && mushroomTypes.Any())
                     {
                         // iterate through list
-                        foreach (OutputWithChance output in mushroomTypes)
+                        foreach (KeyValuePair<string, float> output in mushroomTypes)
                         {
                             // Roll to select entry in the list and move on so that tree's output can be added to the pool
                             // grabs the first item in the list that it can
                             // mushroomType doesn't get reassigned from the default if none of the outputs are selected
-                            if (Game1.random.NextBool(output.Item2))
+                            if (Game1.random.NextBool(output.Value))
                             {
-                                mushroomType = output.Item1;
+                                mushroomType = output.Key;
                                 break;
                             }
                         }

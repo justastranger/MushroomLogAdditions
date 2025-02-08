@@ -1,14 +1,7 @@
 ﻿namespace MushroomLogAdditions
 {
-    internal class MushroomLogData : Dictionary<string, List<OutputWithChance>>
+    internal class MushroomLogData : Dictionary<string, Dictionary<string, float>>
     {
 
-    }
-
-    internal class OutputWithChance : Tuple<string, float>
-    {
-        public OutputWithChance(string outputQualifiedItemId, float chance) : base(outputQualifiedItemId, chance)
-        {
-        }
     }
 }
