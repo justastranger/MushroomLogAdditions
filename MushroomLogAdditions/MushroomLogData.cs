@@ -1,6 +1,8 @@
-﻿namespace MushroomLogAdditions
+﻿using System.Collections.Specialized;
+
+namespace MushroomLogAdditions
 {
-    internal class MushroomLogData : Dictionary<string, Dictionary<string, float>>
+    internal class MushroomLogData : Dictionary<string, OrderedDictionary>
     {
 
     }

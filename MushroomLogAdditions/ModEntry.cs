@@ -6,6 +6,7 @@ using StardewValley.TerrainFeatures;
 using StardewValley.GameData.Machines;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using System.Collections.Specialized;
 
 namespace MushroomLogAdditions
 {
@@ -92,7 +93,7 @@ namespace MushroomLogAdditions
                     data = contentPack.ReadJsonFile<MushroomLogData>("MushroomLogData.json");
                     if (data != null && data.Count > 0)
                     {
-                        // merge the two dictionaries, discarding conflicts on a first-come-first-saved basis
+                        // merge the two dictionaries, overwriting existing outputs and appending new ones
                         var overlap = data.Keys.Intersect(treeToOutputDict.Keys);
                         treeToOutputDict.TryAddMany(data);
                         if (overlap.Any())
@@ -100,7 +101,12 @@ namespace MushroomLogAdditions
                             Monitor.Log(i18n.Get("MushroomLogAdditions.packs.duplicates", new { contentPack.Manifest.Name, overlap = JsonConvert.SerializeObject(overlap) }), LogLevel.Info);
                             foreach (string treeToMerge in overlap)
                             {
-                                treeToOutputDict[treeToMerge].TryAddMany(data[treeToMerge]);
+                                foreach (KeyValuePair<string, float> output in data[treeToMerge])
+                                {
+                                    if (treeToOutputDict[treeToMerge].Contains(output.Key)) treeToOutputDict[treeToMerge][output.Key] = output.Value;
+                                    else treeToOutputDict[treeToMerge].Add(output.Key, output.Value);
+                                }
+                                
                             }
                         }
                         Monitor.Log(i18n.Get("MushroomLogAdditions.packs.loaded"), LogLevel.Trace);
@@ -173,10 +179,10 @@ namespace MushroomLogAdditions
                 }
                 
                 // check to see if the scanned tree is registered as having an output
-                if (treeToOutputDict.TryGetValue(treeType, out Dictionary<string, float>? mushroomTypes))
+                if (treeToOutputDict.TryGetValue(treeType, out OrderedDictionary? mushroomTypes))
                 {
                     // if there's something registered and there's no chicanery with the list
-                    if (mushroomTypes != null && mushroomTypes.Any())
+                    if (mushroomTypes != null && mushroomTypes.Count > 0)
                     {
                         // iterate through list
                         foreach (KeyValuePair<string, float> output in mushroomTypes)

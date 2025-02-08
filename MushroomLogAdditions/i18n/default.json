@@ -6,7 +6,7 @@
     "MushroomLogAdditions.internal.null": "Internal content pack failed to load.",
     "MushroomLogAdditions.internal.loaded": "Loaded internal content pack.",
     "MushroomLogAdditions.packs.loading": "Reading content pack: {{Name}} {{Version}} from {{DirectoryPath}}",
-    "MushroomLogAdditions.packs.duplicates": "Detected overlapping TreeTypes when loading {{Name}} : {{overlap}}. New outputs will be merged but existing outputs will not be overwritten.",
+    "MushroomLogAdditions.packs.duplicates": "Detected overlapping TreeTypes when loading {{Name}} : {{overlap}}. Existing outputs will be overwritten and new outputs appended to the end of the list. ",
     "MushroomLogAdditions.packs.loaded": "Content pack loaded successfully.",
     "MushroomLogAdditions.packs.complete": "Content packs loaded, current additions:"
 }
